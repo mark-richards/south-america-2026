@@ -67,6 +67,21 @@
   .tag.highlight { background: #FFF8EC; color: #8A5C0A; border-color: #F0D8A0; }
   .tag.altitude { background: #EEF4FF; color: #3D5A9E; border-color: #C5D4F0; }
 
+  .stop-card.featured { grid-template-columns: 68px 1fr; }
+  .stop-card.featured .stop-date { padding: 20px 6px; }
+  .stop-card.featured .stop-d { font-size: 28px; }
+  .stop-card.featured .stop-body { padding: 18px 16px 16px; }
+  .stop-card.featured .stop-city { font-size: 19px; margin-bottom: 5px; }
+  .stop-card.featured .stop-detail { font-size: 12px; margin-bottom: 12px; }
+
+  .stop-card.compact { grid-template-columns: 52px 1fr; }
+  .stop-card.compact .stop-date { padding: 10px 6px; }
+  .stop-card.compact .stop-d { font-size: 17px; }
+  .stop-card.compact .stop-body { padding: 10px 12px 9px; }
+  .stop-card.compact .stop-city { font-size: 13px; margin-bottom: 2px; }
+  .stop-card.compact .stop-detail { font-size: 10px; margin-bottom: 7px; }
+  .stop-card.compact .tag { font-size: 9px; padding: 2px 7px; }
+
   .footer { padding: 36px 24px 48px; text-align: center; background: #1A1814; color: rgba(247,245,240,0.35); }
   .footer-script { font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 22px; color: rgba(247,245,240,0.6); margin-bottom: 8px; }
   .footer-sub { font-size: 11px; letter-spacing: 0.08em; }
@@ -149,12 +164,12 @@
           <div class="tags"><span class="tag highlight">Cycling the world's most dangerous road</span><span class="tag">Witches' Market</span><span class="tag">Cable car views across the city</span><span class="tag">Street food</span></div>
         </div>
       </div>
-      <div class="stop-card">
+      <div class="stop-card compact">
         <div class="stop-date"><div class="stop-d">3</div><div class="stop-m">Aug</div></div>
         <div class="stop-body">
           <div class="stop-city">Copacabana</div>
           <div class="stop-detail">1 night on the shores of Lake Titicaca</div>
-          <div class="tags"><span class="tag">Boat trip to Isla del Sol — sacred Inca island</span><span class="tag">Sunset on the lake</span></div>
+          <div class="tags"><span class="tag">Isla del Sol — sacred Inca island</span><span class="tag">Sunset on the lake</span></div>
         </div>
       </div>
     </div>
@@ -170,12 +185,12 @@
   </button>
   <div class="country-stops" style="max-height:2400px">
     <div class="stops-inner">
-      <div class="stop-card">
+      <div class="stop-card compact">
         <div class="stop-date"><div class="stop-d">4</div><div class="stop-m">Aug</div></div>
         <div class="stop-body">
           <div class="stop-city">Puno</div>
           <div class="stop-detail">A day on the world's highest navigable lake</div>
-          <div class="tags"><span class="tag">Visiting the Uros people on floating reed islands</span><span class="tag">Taquile Island weavers</span></div>
+          <div class="tags"><span class="tag">Uros floating reed islands</span><span class="tag">Taquile Island weavers</span></div>
         </div>
       </div>
       <div class="stop-card">
@@ -186,7 +201,7 @@
           <div class="tags"><span class="tag">Sacred Valley day trip</span><span class="tag">Pisac Inca ruins and markets</span><span class="tag">Ollantaytambo fortress</span><span class="tag">Temple of the Sun</span><span class="tag">San Blas artists' quarter</span></div>
         </div>
       </div>
-      <div class="stop-card">
+      <div class="stop-card featured">
         <div class="stop-date"><div class="stop-d">8</div><div class="stop-m">Aug</div></div>
         <div class="stop-body">
           <div class="stop-city">Salkantay Trek</div>
@@ -268,7 +283,7 @@
           <div class="tags"><span class="tag highlight">Climbing El Peñol rock for panoramic views</span><span class="tag">Cable car through the hillside comunas</span><span class="tag">Graffiti art tour of Comuna 13</span><span class="tag">Lively El Poblado</span></div>
         </div>
       </div>
-      <div class="stop-card">
+      <div class="stop-card featured">
         <div class="stop-date"><div class="stop-d">30</div><div class="stop-m">Aug</div></div>
         <div class="stop-body">
           <div class="stop-city">Bogotá</div>
@@ -289,7 +304,7 @@
   </button>
   <div class="country-stops" style="max-height:1400px">
     <div class="stops-inner">
-      <div class="stop-card">
+      <div class="stop-card featured">
         <div class="stop-date"><div class="stop-d">4</div><div class="stop-m">Sep</div></div>
         <div class="stop-body">
           <div class="stop-city">Rio de Janeiro</div>
@@ -297,15 +312,15 @@
           <div class="tags"><span class="tag">Christ the Redeemer</span><span class="tag">Sugar Loaf at sunset</span><span class="tag highlight">Paragliding off the cliffs onto the beach</span><span class="tag">4WD through the Tijuca jungle — waterfalls and monkeys</span><span class="tag">Favela Rocinha walking tour</span><span class="tag">Beach days on Ipanema</span></div>
         </div>
       </div>
-      <div class="stop-card">
+      <div class="stop-card compact">
         <div class="stop-date"><div class="stop-d">12</div><div class="stop-m">Sep</div></div>
         <div class="stop-body">
           <div class="stop-city">Recife</div>
           <div class="stop-detail">1 night in Brazil's colonial northeast</div>
-          <div class="tags"><span class="tag">Colonial old town</span><span class="tag">Boa Viagem beach</span><span class="tag">Fresh seafood by the water</span></div>
+          <div class="tags"><span class="tag">Colonial old town</span><span class="tag">Fresh seafood by the water</span></div>
         </div>
       </div>
-      <div class="stop-card">
+      <div class="stop-card featured">
         <div class="stop-date"><div class="stop-d">13</div><div class="stop-m">Sep</div></div>
         <div class="stop-body">
           <div class="stop-city">Fernando de Noronha</div>
