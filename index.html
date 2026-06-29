@@ -7,6 +7,7 @@
 <title>South America 2026 · Mark & Bec</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -137,6 +138,33 @@
   .stop-card.compact .photo-strip img { width: 148px; height: 104px; }
   .stop-card.compact .photo-strip img:first-child { width: 172px; }
 
+  .map-section { background: #1A1814; border-bottom: 1px solid rgba(247,245,240,0.08); }
+  .map-header { padding: 22px 24px 14px; }
+  .map-title { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 400; color: #F7F5F0; }
+  .map-sub { font-size: 11px; color: rgba(247,245,240,0.38); margin-top: 4px; letter-spacing: 0.05em; }
+  #trip-map { height: 440px; width: 100%; }
+  .map-marker {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 500; color: #fff;
+    border: 2px solid rgba(255,255,255,0.22);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    cursor: pointer;
+  }
+  .leaflet-container { background: #0D0C0B; }
+  .leaflet-control-zoom { border: none !important; margin: 14px !important; }
+  .leaflet-control-zoom a { background: rgba(26,24,20,0.92) !important; color: rgba(247,245,240,0.65) !important; border: 1px solid rgba(247,245,240,0.12) !important; width: 28px !important; height: 28px !important; line-height: 28px !important; }
+  .leaflet-control-zoom a:hover { background: rgba(50,46,40,0.95) !important; color: #F7F5F0 !important; }
+  .leaflet-control-attribution { background: rgba(0,0,0,0.45) !important; color: rgba(255,255,255,0.2) !important; font-size: 9px !important; }
+  .leaflet-control-attribution a { color: rgba(255,255,255,0.3) !important; }
+  .leaflet-popup-content-wrapper { background: #1E1B16; border: 1px solid rgba(247,245,240,0.1); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,0.55); color: #F7F5F0; }
+  .leaflet-popup-tip-container { display: none; }
+  .leaflet-popup-content { margin: 13px 16px 12px; }
+  .map-popup-city { font-size: 14px; font-weight: 500; color: #F7F5F0; margin-bottom: 3px; }
+  .map-popup-meta { font-size: 11px; color: rgba(247,245,240,0.45); }
+  .leaflet-popup-close-button { color: rgba(247,245,240,0.4) !important; font-size: 16px !important; top: 6px !important; right: 8px !important; }
+
   .footer { padding: 36px 24px 48px; text-align: center; background: #1A1814; color: rgba(247,245,240,0.35); }
   .footer-script { font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 22px; color: rgba(247,245,240,0.6); margin-bottom: 8px; }
   .footer-sub { font-size: 11px; letter-spacing: 0.08em; }
@@ -151,7 +179,7 @@
   <div class="stats">
     <div class="stat"><div class="stat-n">68</div><div class="stat-l">Days</div></div>
     <div class="stat"><div class="stat-n">6</div><div class="stat-l">Countries</div></div>
-    <div class="stat"><div class="stat-n">19</div><div class="stat-l">Stops</div></div>
+    <div class="stat"><div class="stat-n">20</div><div class="stat-l">Stops</div></div>
     <div class="stat"><div class="stat-n">5</div><div class="stat-l">Trek days</div></div>
   </div>
 </div>
@@ -163,6 +191,15 @@
   <div class="legend-item"><div class="legend-dot" style="background:var(--dot-ec)"></div>Ecuador</div>
   <div class="legend-item"><div class="legend-dot" style="background:var(--dot-co)"></div>Colombia</div>
   <div class="legend-item"><div class="legend-dot" style="background:var(--dot-br)"></div>Brazil</div>
+</div>
+
+<!-- MAP -->
+<div class="map-section">
+  <div class="map-header">
+    <div class="map-title">The Route</div>
+    <div class="map-sub">20 stops · 68 days across South America</div>
+  </div>
+  <div id="trip-map"></div>
 </div>
 
 <!-- CHILE -->
@@ -531,6 +568,7 @@
   <div class="footer-sub">Santiago → Sydney → Melbourne · 24–27 Sep</div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   function toggle(btn) {
     const expanded = btn.getAttribute('aria-expanded') === 'true';
@@ -545,6 +583,62 @@
     }
     btn.setAttribute('aria-expanded', String(!expanded));
   }
+
+  (function initMap() {
+    const stops = [
+      {n:1,  city:'Santiago',             country:'Chile',    date:'21 Jul', lat:-33.45,  lng:-70.67, color:'#D85A30'},
+      {n:2,  city:'San Pedro de Atacama', country:'Chile',    date:'24 Jul', lat:-22.91,  lng:-68.20, color:'#D85A30'},
+      {n:3,  city:'Uyuni',                country:'Bolivia',  date:'28 Jul', lat:-20.46,  lng:-66.83, color:'#BA7517'},
+      {n:4,  city:'La Paz',               country:'Bolivia',  date:'31 Jul', lat:-16.50,  lng:-68.15, color:'#BA7517'},
+      {n:5,  city:'Copacabana',           country:'Bolivia',  date:'3 Aug',  lat:-16.17,  lng:-69.09, color:'#BA7517'},
+      {n:6,  city:'Puno',                 country:'Peru',     date:'4 Aug',  lat:-15.84,  lng:-70.02, color:'#1D9E75'},
+      {n:7,  city:'Cusco',                country:'Peru',     date:'5 Aug',  lat:-13.53,  lng:-71.97, color:'#1D9E75'},
+      {n:8,  city:'Salkantay Trek',       country:'Peru',     date:'8 Aug',  lat:-13.30,  lng:-72.55, color:'#1D9E75'},
+      {n:9,  city:'Cusco',                country:'Peru',     date:'12 Aug', lat:-13.63,  lng:-71.87, color:'#1D9E75'},
+      {n:10, city:'Lima',                 country:'Peru',     date:'14 Aug', lat:-12.05,  lng:-77.03, color:'#1D9E75'},
+      {n:11, city:'Iquitos',              country:'Peru',     date:'16 Aug', lat:-3.75,   lng:-73.25, color:'#1D9E75'},
+      {n:12, city:'Lima',                 country:'Peru',     date:'19 Aug', lat:-11.95,  lng:-76.93, color:'#1D9E75'},
+      {n:13, city:'Baños',                country:'Ecuador',  date:'22 Aug', lat:-1.40,   lng:-78.42, color:'#639922'},
+      {n:14, city:'Medellín',             country:'Colombia', date:'26 Aug', lat:6.25,    lng:-75.56, color:'#7F77DD'},
+      {n:15, city:'Bogotá',               country:'Colombia', date:'30 Aug', lat:4.71,    lng:-74.07, color:'#7F77DD'},
+      {n:16, city:'Rio de Janeiro',       country:'Brazil',   date:'4 Sep',  lat:-22.91,  lng:-43.17, color:'#378ADD'},
+      {n:17, city:'Recife',               country:'Brazil',   date:'12 Sep', lat:-8.05,   lng:-34.88, color:'#378ADD'},
+      {n:18, city:'Fernando de Noronha',  country:'Brazil',   date:'13 Sep', lat:-3.86,   lng:-32.43, color:'#378ADD'},
+      {n:19, city:'São Paulo',            country:'Brazil',   date:'20 Sep', lat:-23.55,  lng:-46.63, color:'#378ADD'},
+      {n:20, city:'Santiago',             country:'Chile',    date:'22 Sep', lat:-33.35,  lng:-70.57, color:'#D85A30'},
+    ];
+
+    const map = L.map('trip-map', {
+      zoomControl: true,
+      attributionControl: true,
+      scrollWheelZoom: false,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 19,
+    }).addTo(map);
+
+    const coords = stops.map(s => [s.lat, s.lng]);
+    L.polyline(coords, {color: 'rgba(247,245,240,0.28)', weight: 1.5, dashArray: '4,7'}).addTo(map);
+
+    stops.forEach(s => {
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="map-marker" style="background:${s.color}">${s.n}</div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -18],
+      });
+      const marker = L.marker([s.lat, s.lng], {icon}).addTo(map);
+      marker.bindPopup(
+        `<div class="map-popup-city">${s.city}</div>` +
+        `<div class="map-popup-meta">${s.country} · ${s.date}</div>`
+      );
+    });
+
+    map.fitBounds(L.latLngBounds(coords), {padding: [24, 24]});
+  })();
 </script>
 </body>
 </html>
