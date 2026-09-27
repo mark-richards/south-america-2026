@@ -7,7 +7,6 @@
 <title>South America 2026 · Mark & Bec</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -181,28 +180,7 @@
   .map-leg-line { display: inline-block; width: 22px; height: 2px; border-radius: 1px; flex-shrink: 0; }
   .map-leg-line.overland { background: repeating-linear-gradient(to right, rgba(247,245,240,0.65) 0, rgba(247,245,240,0.65) 5px, transparent 5px, transparent 9px); }
   .map-leg-line.flight { background: repeating-linear-gradient(to right, rgba(247,245,240,0.3) 0, rgba(247,245,240,0.3) 2px, transparent 2px, transparent 8px); }
-  #trip-map { height: 440px; width: 100%; }
-  .map-marker {
-    width: 26px; height: 26px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 500; color: #fff;
-    border: 2px solid rgba(255,255,255,0.22);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.45);
-    font-family: 'DM Sans', system-ui, sans-serif;
-    cursor: pointer;
-  }
-  .leaflet-container { background: #0D0C0B; }
-  .leaflet-control-zoom { border: none !important; margin: 14px !important; }
-  .leaflet-control-zoom a { background: rgba(26,24,20,0.92) !important; color: rgba(247,245,240,0.65) !important; border: 1px solid rgba(247,245,240,0.12) !important; width: 28px !important; height: 28px !important; line-height: 28px !important; }
-  .leaflet-control-zoom a:hover { background: rgba(50,46,40,0.95) !important; color: #F7F5F0 !important; }
-  .leaflet-control-attribution { background: rgba(0,0,0,0.45) !important; color: rgba(255,255,255,0.2) !important; font-size: 9px !important; }
-  .leaflet-control-attribution a { color: rgba(255,255,255,0.3) !important; }
-  .leaflet-popup-content-wrapper { background: #1E1B16; border: 1px solid rgba(247,245,240,0.1); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,0.55); color: #F7F5F0; }
-  .leaflet-popup-tip-container { display: none; }
-  .leaflet-popup-content { margin: 13px 16px 12px; }
-  .map-popup-city { font-size: 14px; font-weight: 500; color: #F7F5F0; margin-bottom: 3px; }
-  .map-popup-meta { font-size: 11px; color: rgba(247,245,240,0.45); }
-  .leaflet-popup-close-button { color: rgba(247,245,240,0.4) !important; font-size: 16px !important; top: 6px !important; right: 8px !important; }
+  #trip-map { height: 440px; width: 100%; display: block; background: #0D0C0B; }
 
   .footer { padding: 36px 24px 48px; text-align: center; background: #1A1814; color: rgba(247,245,240,0.35); }
   .footer-script { font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 22px; color: rgba(247,245,240,0.6); margin-bottom: 8px; }
@@ -249,7 +227,7 @@
       <div class="map-leg-item"><span class="map-leg-line flight"></span>Flight</div>
     </div>
   </div>
-  <div id="trip-map"></div>
+  <svg id="trip-map" viewBox="0 0 500 690" preserveAspectRatio="xMidYMid meet" aria-label="South America route map"></svg>
 </div>
 
 <!-- CHILE -->
@@ -643,7 +621,6 @@
   <div class="footer-sub">Santiago → Sydney → Melbourne · 24–27 Sep</div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   function toggle(btn) {
     const expanded = btn.getAttribute('aria-expanded') === 'true';
@@ -738,44 +715,53 @@
   })();
 
   (function initMap() {
-    const map = L.map('trip-map', {
-      zoomControl: true,
-      attributionControl: true,
-      scrollWheelZoom: false,
-    });
+    const svg = document.getElementById('trip-map');
+    if (!svg) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const W = 500, H = 690;
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
-      maxZoom: 19,
-    }).addTo(map);
-
-    // Draw route segments: overland vs flight
-    for (let i = 0; i < STOPS.length - 1; i++) {
-      const a = STOPS[i], b = STOPS[i + 1];
-      const isOverland = OVERLAND.has(`${a.n}-${b.n}`);
-      L.polyline([[a.lat, a.lng], [b.lat, b.lng]], isOverland
-        ? {color: 'rgba(247,245,240,0.6)', weight: 2, dashArray: '6,5'}
-        : {color: 'rgba(247,245,240,0.22)', weight: 1.5, dashArray: '2,8'}
-      ).addTo(map);
+    function toXY(lat, lng) {
+      return [(lng + 82) / 51 * W, (13 - lat) / 71 * H];
+    }
+    function el(tag, attrs) {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+      return e;
     }
 
-    STOPS.forEach(s => {
-      const icon = L.divIcon({
-        className: '',
-        html: `<div class="map-marker" style="background:${s.color}">${s.n}</div>`,
-        iconSize: [26, 26],
-        iconAnchor: [13, 13],
-        popupAnchor: [0, -18],
-      });
-      const marker = L.marker([s.lat, s.lng], {icon}).addTo(map);
-      marker.bindPopup(
-        `<div class="map-popup-city">${s.city}</div>` +
-        `<div class="map-popup-meta">${s.country} · ${s.date}</div>`
-      );
-    });
+    svg.appendChild(el('rect', {width: W, height: H, fill: '#0D0C0B'}));
 
-    const coords = STOPS.map(s => [s.lat, s.lng]);
-    map.fitBounds(L.latLngBounds(coords), {padding: [24, 24]});
+    // Simplified South America coastline
+    const SA = 'M49,49 L49,88 L23,117 L20,146 L10,175 L29,204 L49,243 L98,292 L115,307 L115,358 L106,416 L103,447 L88,486 L88,530 L78,574 L78,623 L98,652 L147,667 L167,652 L167,632 L132,613 L142,574 L167,545 L196,506 L240,496 L225,462 L253,466 L304,418 L343,360 L382,350 L412,321 L426,253 L461,204 L461,175 L382,146 L314,126 L314,107 L294,88 L245,68 L216,49 L196,19 L167,10 L102,10 L78,15 Z';
+    svg.appendChild(el('path', {d: SA, fill: 'rgba(247,245,240,0.05)', stroke: 'rgba(247,245,240,0.18)', 'stroke-width': '1', 'stroke-linejoin': 'round'}));
+
+    // Route lines
+    for (let i = 0; i < STOPS.length - 1; i++) {
+      const a = STOPS[i], b = STOPS[i + 1];
+      const [x1, y1] = toXY(a.lat, a.lng);
+      const [x2, y2] = toXY(b.lat, b.lng);
+      const over = OVERLAND.has(`${a.n}-${b.n}`);
+      svg.appendChild(el('line', {
+        x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1),
+        stroke: over ? 'rgba(247,245,240,0.55)' : 'rgba(247,245,240,0.22)',
+        'stroke-width': over ? '2' : '1.5',
+        'stroke-dasharray': over ? '6,5' : '2,8',
+        'stroke-linecap': 'round'
+      }));
+    }
+
+    // Stop markers
+    STOPS.forEach(s => {
+      const [cx, cy] = toXY(s.lat, s.lng);
+      const g = el('g', {});
+      const t = el('title', {}); t.textContent = `${s.n}. ${s.city} · ${s.date}`;
+      const shadow = el('circle', {cx: cx.toFixed(1), cy: cy.toFixed(1), r: '13', fill: 'rgba(0,0,0,0.35)'});
+      const circle = el('circle', {cx: cx.toFixed(1), cy: cy.toFixed(1), r: '11', fill: s.color, stroke: 'rgba(255,255,255,0.28)', 'stroke-width': '1.5'});
+      const txt = el('text', {x: cx.toFixed(1), y: cy.toFixed(1), 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: '#fff', 'font-size': s.n > 9 ? '8' : '9', 'font-weight': '600', 'font-family': 'DM Sans,system-ui,sans-serif', 'pointer-events': 'none'});
+      txt.textContent = s.n;
+      g.appendChild(shadow); g.appendChild(circle); g.appendChild(t); g.appendChild(txt);
+      svg.appendChild(g);
+    });
   })();
 </script>
 </body>
