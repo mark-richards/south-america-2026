@@ -180,7 +180,7 @@
   .map-leg-line { display: inline-block; width: 22px; height: 2px; border-radius: 1px; flex-shrink: 0; }
   .map-leg-line.overland { background: repeating-linear-gradient(to right, rgba(247,245,240,0.65) 0, rgba(247,245,240,0.65) 5px, transparent 5px, transparent 9px); }
   .map-leg-line.flight { background: repeating-linear-gradient(to right, rgba(247,245,240,0.3) 0, rgba(247,245,240,0.3) 2px, transparent 2px, transparent 8px); }
-  #trip-map { height: 440px; width: 100%; display: block; background: #0D0C0B; }
+  #trip-map { height: 460px; width: 100%; display: block; background: #0D0C0B; }
 
   .footer { padding: 36px 24px 48px; text-align: center; background: #1A1814; color: rgba(247,245,240,0.35); }
   .footer-script { font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 22px; color: rgba(247,245,240,0.6); margin-bottom: 8px; }
@@ -227,7 +227,7 @@
       <div class="map-leg-item"><span class="map-leg-line flight"></span>Flight</div>
     </div>
   </div>
-  <svg id="trip-map" viewBox="0 0 500 690" preserveAspectRatio="xMidYMid meet" aria-label="South America route map"></svg>
+  <svg id="trip-map" viewBox="0 0 520 480" preserveAspectRatio="xMidYMid meet" aria-label="South America route map"></svg>
 </div>
 
 <!-- CHILE -->
@@ -718,10 +718,10 @@
     const svg = document.getElementById('trip-map');
     if (!svg) return;
     const NS = 'http://www.w3.org/2000/svg';
-    const W = 500, H = 690;
+    const W = 520, H = 480;
 
     function toXY(lat, lng) {
-      return [(lng + 82) / 51 * W, (13 - lat) / 71 * H];
+      return [(lng + 82) / 52 * W, (12 - lat) / 50 * H];
     }
     function el(tag, attrs) {
       const e = document.createElementNS(NS, tag);
@@ -731,8 +731,8 @@
 
     svg.appendChild(el('rect', {width: W, height: H, fill: '#0D0C0B'}));
 
-    // Simplified South America coastline
-    const SA = 'M49,49 L49,88 L23,117 L20,146 L10,175 L29,204 L49,243 L98,292 L115,307 L115,358 L106,416 L103,447 L88,486 L88,530 L78,574 L78,623 L98,652 L147,667 L167,652 L167,632 L132,613 L142,574 L167,545 L196,506 L240,496 L225,462 L253,466 L304,418 L343,360 L382,350 L412,321 L426,253 L461,204 L461,175 L382,146 L314,126 L314,107 L294,88 L245,68 L216,49 L196,19 L167,10 L102,10 L78,15 Z';
+    // South America outline clipped at 38°S (Tierra del Fuego not visited)
+    const SA = 'M25,39 L25,77 L24,106 L20,135 L10,164 L30,192 L50,231 L100,279 L117,294 L117,344 L108,402 L105,432 L90,471 L90,480 L244,480 L230,447 L258,451 L310,404 L350,347 L389,336 L420,308 L434,241 L470,192 L470,164 L389,135 L320,115 L320,96 L300,77 L250,58 L220,39 L200,9 L170,0 L104,0 L80,5 Z';
     svg.appendChild(el('path', {d: SA, fill: 'rgba(247,245,240,0.05)', stroke: 'rgba(247,245,240,0.18)', 'stroke-width': '1', 'stroke-linejoin': 'round'}));
 
     // Route lines
@@ -750,14 +750,30 @@
       }));
     }
 
+    // Offset markers for cities visited twice (within 20 SVG units)
+    const offsets = {};
+    for (let i = 0; i < STOPS.length; i++) {
+      for (let j = i + 1; j < STOPS.length; j++) {
+        const [xi, yi] = toXY(STOPS[i].lat, STOPS[i].lng);
+        const [xj, yj] = toXY(STOPS[j].lat, STOPS[j].lng);
+        if (Math.hypot(xi - xj, yi - yj) < 20) {
+          offsets[STOPS[i].n] = [-9, -9];
+          offsets[STOPS[j].n] = [9, 9];
+        }
+      }
+    }
+
     // Stop markers
     STOPS.forEach(s => {
-      const [cx, cy] = toXY(s.lat, s.lng);
+      const [bx, by] = toXY(s.lat, s.lng);
+      const [ox, oy] = offsets[s.n] || [0, 0];
+      const cx = (bx + ox).toFixed(1);
+      const cy = (by + oy).toFixed(1);
       const g = el('g', {});
       const t = el('title', {}); t.textContent = `${s.n}. ${s.city} · ${s.date}`;
-      const shadow = el('circle', {cx: cx.toFixed(1), cy: cy.toFixed(1), r: '13', fill: 'rgba(0,0,0,0.35)'});
-      const circle = el('circle', {cx: cx.toFixed(1), cy: cy.toFixed(1), r: '11', fill: s.color, stroke: 'rgba(255,255,255,0.28)', 'stroke-width': '1.5'});
-      const txt = el('text', {x: cx.toFixed(1), y: cy.toFixed(1), 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: '#fff', 'font-size': s.n > 9 ? '8' : '9', 'font-weight': '600', 'font-family': 'DM Sans,system-ui,sans-serif', 'pointer-events': 'none'});
+      const shadow = el('circle', {cx, cy, r: '13', fill: 'rgba(0,0,0,0.35)'});
+      const circle = el('circle', {cx, cy, r: '11', fill: s.color, stroke: 'rgba(255,255,255,0.28)', 'stroke-width': '1.5'});
+      const txt = el('text', {x: cx, y: cy, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: '#fff', 'font-size': s.n > 9 ? '8' : '9', 'font-weight': '600', 'font-family': 'DM Sans,system-ui,sans-serif', 'pointer-events': 'none'});
       txt.textContent = s.n;
       g.appendChild(shadow); g.appendChild(circle); g.appendChild(t); g.appendChild(txt);
       svg.appendChild(g);
