@@ -161,6 +161,16 @@
 
   /* Current stop card highlight */
   .stop-card.current-stop { box-shadow: inset 4px 0 0 0 var(--accent), 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent); }
+
+  /* Map marker interaction */
+  #trip-map g { cursor: pointer; transition: transform 0.15s; transform-box: fill-box; transform-origin: center; }
+  #trip-map g:hover { transform: scale(1.18); }
+  .stop-card { scroll-margin-top: 72px; }
+  @keyframes map-focus-pulse {
+    0%,100% { box-shadow: inset 4px 0 0 0 var(--accent); }
+    30% { box-shadow: inset 4px 0 0 0 var(--accent), 0 0 0 4px color-mix(in srgb, var(--accent) 55%, transparent); }
+  }
+  .stop-card.map-focus { animation: map-focus-pulse 1.4s ease; }
   .here-badge {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em;
@@ -636,6 +646,25 @@
     btn.setAttribute('aria-expanded', String(!expanded));
   }
 
+  function scrollToStop(n) {
+    const cards = document.querySelectorAll('.stop-card');
+    const card = cards[n - 1];
+    if (!card) return;
+    const panel = card.closest('.country-stops');
+    const wasCollapsed = panel && panel.classList.contains('collapsed');
+    if (wasCollapsed) {
+      const btn = panel.previousElementSibling;
+      if (btn) toggle(btn);
+    }
+    setTimeout(() => {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.remove('map-focus');
+      void card.offsetWidth;
+      card.classList.add('map-focus');
+      setTimeout(() => card.classList.remove('map-focus'), 1500);
+    }, wasCollapsed ? 380 : 0);
+  }
+
   const STOPS = [
     {n:1,  city:'Santiago',             country:'Chile',    date:'21 Jul', start:'2026-07-21', lat:-33.45,  lng:-70.67, color:'#D85A30'},
     {n:2,  city:'San Pedro de Atacama', country:'Chile',    date:'24 Jul', start:'2026-07-24', lat:-22.91,  lng:-68.20, color:'#D85A30'},
@@ -776,6 +805,7 @@
       const txt = el('text', {x: cx, y: cy, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: '#fff', 'font-size': s.n > 9 ? '8' : '9', 'font-weight': '600', 'font-family': 'DM Sans,system-ui,sans-serif', 'pointer-events': 'none'});
       txt.textContent = s.n;
       g.appendChild(shadow); g.appendChild(circle); g.appendChild(t); g.appendChild(txt);
+      g.addEventListener('click', () => scrollToStop(s.n));
       svg.appendChild(g);
     });
   })();
