@@ -88,6 +88,8 @@
   .tags { display: flex; flex-wrap: wrap; gap: 5px; }
   .tag { font-size: 10px; padding: 3px 9px; border-radius: 20px; background: var(--tag-bg); color: var(--tag-text); border: 1px solid var(--border); line-height: 1.5; }
   .tag.highlight { background: color-mix(in srgb, var(--accent) 14%, #FFF8EC); color: #7A4C06; border-color: color-mix(in srgb, var(--accent) 25%, #F0D8A0); }
+  .back-to-map { display: flex; align-items: center; gap: 4px; justify-content: flex-end; margin-top: 9px; font-size: 10px; letter-spacing: 0.07em; color: var(--accent); opacity: 0.65; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; width: 100%; }
+  .back-to-map:hover { opacity: 1; }
 
   .stop-card.featured { grid-template-columns: 68px 1fr; }
   .stop-card.featured .stop-date { padding: 20px 6px; }
@@ -809,6 +811,17 @@
       svg.appendChild(g);
     });
   })();
+
+  // Back-to-map links
+  document.querySelectorAll('.stop-card').forEach(card => {
+    const body = card.querySelector('.stop-body');
+    if (!body) return;
+    const link = document.createElement('button');
+    link.className = 'back-to-map';
+    link.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1,7 5,3 9,7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Map';
+    link.addEventListener('click', () => document.getElementById('trip-map').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    body.appendChild(link);
+  });
 </script>
 </body>
 </html>
